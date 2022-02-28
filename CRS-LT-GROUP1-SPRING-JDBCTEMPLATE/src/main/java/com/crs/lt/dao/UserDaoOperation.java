@@ -84,7 +84,7 @@ public class UserDaoOperation implements UserDAOInterface{
 	@Override
 	@Transactional
 	public boolean updatePassword(String userID, String newPassword) throws SQLException {
-		int row =  jdbcTemplate.update(SQLQueryConstant.UPDATE_PASSWORD,new Object[] {userID,newPassword},String.class);
+		int row =  jdbcTemplate.update(SQLQueryConstant.UPDATE_PASSWORD,newPassword,userID);
 		System.out.println("Updated row :" + row);
 		  return  row==1 ? true:false;
 		  
