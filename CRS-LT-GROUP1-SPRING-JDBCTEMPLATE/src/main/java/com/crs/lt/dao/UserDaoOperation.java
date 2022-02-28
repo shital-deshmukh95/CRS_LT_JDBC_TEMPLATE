@@ -9,175 +9,109 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.crs.lt.bean.Catalog;
 import com.crs.lt.bean.User;
 import com.crs.lt.configuration.ConfigurationJDBC;
 import com.crs.lt.constant.GenderConstant;
 import com.crs.lt.constant.RoleConstant;
 import com.crs.lt.constant.SQLQueryConstant;
 import com.crs.lt.exceptions.UserNotFoundException;
+import com.crs.lt.mapper.CatalogMapper;
+import com.crs.lt.mapper.UserMapper;
 
 
 @Repository
 public class UserDaoOperation implements UserDAOInterface{
 	private static Logger logger=Logger.getLogger(UserDaoOperation.class);
-
-	 //List users;
-	
 	@Autowired
 	private ConfigurationJDBC configurationJDBC;
+	
+	@Autowired
+	JdbcTemplate jdbcTemplate; 
+
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean verifyCredentials(String userId, String password)throws UserNotFoundException, SQLException {
+		boolean isVerify = false ;
+		List<User> userList = new ArrayList<>();
+		System.out.println("verifyCredentials");
+		userList =  jdbcTemplate.query(SQLQueryConstant.GET_USER_DETAILS,new Object[] {userId} , new UserMapper());
+		System.out.println("***************size"+userList.size());
 
-		Connection connection = configurationJDBC.dataSource().getConnection();
-		try
-		{
-			//open db connection
-			//String sql="select password from user where userId = ?";
-			
-			PreparedStatement stmt = null;
-		      stmt = connection.prepareStatement(SQLQueryConstant.CHECK_CREDENTIALS_USER_DETAILS);
-		      stmt.setString(1, userId); 
-		      
-		      ResultSet resultSet = stmt.executeQuery();
-		      System.out.println(resultSet);
-			if(!resultSet.next())
-				throw new UserNotFoundException(userId);
 
-//			  if (resultSet.next()) {
-//	                User user = new User(
-//	                		resultSet.getString("userId"),
-//	                		resultSet.getString("name"),
-//	                		resultSet.getString("address"),
-//	                		resultSet.getString("password"),
-//	                		resultSet.getString(RoleConstant.stringToName("role")),
-//	                		resultSet.getLong(GenderConstant.stringToGender("gender"))
-//	                );
-//	                user.setId(rs.getInt("id"));
-//	                return user;
-			else if(password.equals(resultSet.getString("password")))
-			{
-				
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-			
+		if(userList.size() == 0) {
+			throw new UserNotFoundException(userId);
 		}
-		catch(SQLException ex)
+		User user =	userList.get(0);
+		 if(password !=null && user.getPassword().equals(password))
 		{
-			logger.error("Not found", ex);
+			isVerify = true;
 		}
-		finally
-		{
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				logger.error("Exception in DAO" + e.getMessage());
-			}
-		}
-		return false;
+		return isVerify;
+
 	}
+
+	@SuppressWarnings("deprecation")
 	@Override
 	public String getRole(String userId) throws SQLException {
-		// TODO Auto-generated method stub
-		Connection connection = configurationJDBC.dataSource().getConnection();
+		String role = null;
 		try {
-			//connection=DBUtils.getConnection();
-			PreparedStatement statement = connection.prepareStatement(SQLQueryConstant.GET_ROLE_TYPE);
-			statement.setString(1, userId);
-			ResultSet rs = statement.executeQuery();
-
-			if(rs.next())
-			{
-				return rs.getString("role");
+			List<User> userList = new ArrayList<>();
+			userList =  jdbcTemplate.query(SQLQueryConstant.GET_USER_DETAILS, new Object[] {userId},new UserMapper());
+			
+			if(userList.size() == 0) {
+				throw new Exception();
 			}
-				
+			User user =	userList.get(0);
+			if(user!=null)
+			{
+				role = user.getRole().toString(); 
+			}
+
 		}
 		catch(Exception e)
 		{
-			logger.error("Exception in DAO" + e.getMessage());
-			
+			System.out.println("Exception in DAO" + e.getMessage());
+
 		}
-		
-		finally
-		{
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				//logger.error("Exception in DAO" + e.getMessage());
-			}
-		}
-		return null;
+
+		return role;
 	}
 	@Override
+	@Transactional
 	public boolean updatePassword(String userID, String newPassword) throws SQLException {
-		// TODO Auto-generated method stub
-		Connection connection = configurationJDBC.dataSource().getConnection();
-		try {
-			PreparedStatement statement = connection.prepareStatement(SQLQueryConstant.UPDATE_PASSWORD);
-			
-			statement.setString(1, newPassword);
-			statement.setString(2, userID);
-			
-			int row = statement.executeUpdate();
-			
-			if(row==1)
-				return true;
-			else
-				return false;
-		}
-		catch(SQLException e)
-		{
-			logger.error(e.getMessage());
-		}
-		finally
-		{
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				logger.error("Exception in DAO" + e.getMessage());
-			}
-		}
-		return false;
+		int row =  jdbcTemplate.update(SQLQueryConstant.UPDATE_PASSWORD,new Object[] {userID,newPassword},String.class);
+		System.out.println("Updated row :" + row);
+		  return  row==1 ? true:false;
+		  
 	}
 	@Override
 	public String getName(String userId) throws SQLException {
-		// TODO Auto-generated method stub
-		Connection connection = configurationJDBC.dataSource().getConnection();
+		String name = null;
 		try {
+			List<User> userList = new ArrayList<>();
+			userList =  jdbcTemplate.query(SQLQueryConstant.GET_USER_DETAILS, new Object[] {userId},new UserMapper());
 			
-			PreparedStatement statement = connection.prepareStatement(SQLQueryConstant.GET_USER_NAME);
-			statement.setString(1, userId);
-			ResultSet rs = statement.executeQuery();
-
-			if(rs.next())
-			{
-				return rs.getString("name");
+			if(userList.size() == 0) {
+				throw new Exception();
 			}
-				
+			User user =	userList.get(0);
+			if(user!=null)
+			{
+				name = user.getName(); 
+			}
+
 		}
 		catch(Exception e)
 		{
-			logger.error("Exception in DAO" + e.getMessage());
-			
+			System.out.println("Exception in DAO" + e.getMessage());
+
 		}
-		
-		finally
-		{
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				//logger.error("Exception in DAO" + e.getMessage());
-			}
-		}
-		return null;
+
+		return name;
 	}
 }

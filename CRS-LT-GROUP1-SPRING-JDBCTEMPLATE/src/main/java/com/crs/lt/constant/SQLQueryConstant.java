@@ -36,7 +36,8 @@ public class SQLQueryConstant {
 	public static final String ASSIGN_COURSE_QUERY = "update Course set instructorId = ? where courseCode = ?";
 	public static final String GET_PROFESSOR_BY_USER_ID = "SELECT professor.instructorId, user.name, user.userId, professor.department, professor.designation FROM professor INNER JOIN user ON professor.instructorId = user.userId WHERE userId = ?";
 	public static final String GET_PROF_NAME = "select name from user where userId = ?";
-	
+	public static final String GET_USER_DETAILS = "select * from user where userId = ?";
+
 	
 	
 }

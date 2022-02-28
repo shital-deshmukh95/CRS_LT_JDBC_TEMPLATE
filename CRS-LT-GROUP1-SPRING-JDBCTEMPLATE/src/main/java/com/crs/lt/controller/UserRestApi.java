@@ -60,7 +60,6 @@ public class UserRestApi {
 	            	}
 	            	else 
 	            		return ResponseEntity.status(HttpStatus.OK).body("Role Type: " +role +" Logged In Successfully");
-	            		
 
 				}
 				if (("PROFESSOR").equals(userService.getRole(userId))) {
@@ -90,14 +89,18 @@ public class UserRestApi {
 		return ResponseEntity.status(HttpStatus.OK).body(result);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/user/verifyCredentials/{userId}/{password}")
+	@RequestMapping(method = RequestMethod.GET, value = "/user/verifyCredentials")
 	@ResponseBody
-	public ResponseEntity<?> verifyCredentials(@PathVariable("userId") String userId,
-			@PathVariable("password") String password) {
+	public ResponseEntity<?> verifyCredentials(@RequestParam(value = "userId") String userId,
+			@RequestParam(value ="password") String password) {
 		boolean result;
 		try {
+			
+			System.out.println("check **********************");
 			result = userService.verifyCredentials(userId, password);
-		} catch (Exception e) {
+		} catch (UserNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -145,4 +148,6 @@ public class UserRestApi {
 	        }
 
 	    }
+	   
+		
 }

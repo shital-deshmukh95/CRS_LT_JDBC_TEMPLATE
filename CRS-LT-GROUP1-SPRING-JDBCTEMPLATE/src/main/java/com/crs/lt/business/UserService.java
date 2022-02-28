@@ -22,18 +22,7 @@ public class UserService implements UserInterface {
 	
 	//UserDAOInterface userDAOInterface = new UserDaoOperation();
 	public boolean verifyCredentials(String userId, String password)throws UserNotFoundException, SQLException {
-		try {
-			
-//			 user = userDAOInterface.verifyCredentials(userId, password);
-//		        return (user != null);
 			return userDAOInterface.verifyCredentials(userId, password);
-			//return userDAOInterface.verifyCredentials(userId, password);
-		}
-		catch (UserNotFoundException | SQLException e) {
-			// TODO: handle exception
-			logger.error(e.getMessage());
-			return false;
-		}
 	}
 	@Override
 	public String getRole(String userId) throws SQLException {
